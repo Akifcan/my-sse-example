@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <button>send</button>
+
+    <button id="channel1">channel1</button>
+    <button id="channel2">channel2</button>
+    <button id="leave">leave</button>
+
+    <script>
+
+        let channel = ''
+        let events
+
+        document.querySelector('button').addEventListener('click', _ => {
+            if (!channel) return alert('pick channel')
+            fetch('http://localhost:3000/fact', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({
+                    fact: 'send this message',
+                    channel
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    // console.log(data)
+                })
+        })
+
+        function subscribe(channel) {
+            events = new EventSource(`http://localhost:3000/events/${channel}`)
+            events.onmessage = (event) => {
+                const parsedData = JSON.parse(event.data);
+                console.log(parsedData)
+            }
+        }
+
+        document.querySelector('#channel1').addEventListener('click', _ => {
+            channel = 'x'
+            subscribe(channel)
+            console.log('x')
+        })
+        document.querySelector('#channel2').addEventListener('click', _ => {
+            channel = 'y'
+            subscribe(channel)
+            console.log('y')
+        })
+        document.querySelector('#leave').addEventListener('click', _ => {
+            events.close()
+        })
+    </script>
+
+</body>
+
+</html>
